@@ -15,12 +15,12 @@ namespace EmmyLuaComments
             Console.WriteLine(Directory.GetCurrentDirectory());
             Console.WriteLine("请输入要生成注释的代码文件夹");
             //var inputFolder = Console.ReadLine();
-            var inputFolder = @"D:\Projects\EmmyLuaCode\LuaProject\Leo";
+            var inputFolder = @"D:\UnityProjects\zeus-framework\Project\Workspace\zeus-framework-demo\Packages\com.pwrd.zeus-framework.lua\Runtime\Lua\Framework\UI";
             Console.WriteLine(inputFolder);
 
             Console.WriteLine("请输入生成代码的存储文件夹");
             //var outputFolder = Console.ReadLine();
-            var outputFolder = @"D:\Projects\EmmyLuaCode\EmmyLua";
+            var outputFolder = @"D:\UnityProjects\zeus-framework\Project\Workspace\zeus-framework-demo\Packages\com.pwrd.zeus-framework.lua\Runtime\Lua\Framework\EmmyLua";
             Console.WriteLine(outputFolder);
 
             var luaCodes = Directory.GetFiles(inputFolder, "*.lua",SearchOption.AllDirectories);
@@ -34,22 +34,42 @@ namespace EmmyLuaComments
 
     class EmmyLuaComment
     {
-        static Regex rx = new Regex(@"function (.*):(.*)\n");
+        static Regex functionDeclarationRx = new Regex(@"function (.*):(.*)\n");
+        static Regex nameRex = new Regex(@"\w+\b");
         public static string GenerateComments(string filePath)
         {
             var fileName = Path.GetFileNameWithoutExtension(filePath);
             var content = File.ReadAllText(filePath);
-            var matches = rx.Matches(content);
+            var matches = functionDeclarationRx.Matches(content);
 
             var strBuid = new StringBuilder();
             strBuid.AppendLine(string.Format("---@class {0}", fileName));
 
             foreach (Match item in matches)
             {
-                foreach ( Capture ca in item.Groups)
+                var icotent = "---@field";
+                var names = nameRex.Matches(item.Value);
+
+                //函数名index = 3,之后是参数
+                int index = 0;
+                foreach (Match na in names)
                 {
-                    strBuid.AppendLine(ca.Value);
+                    index++;
+                    if(index == 3)
+                    {
+                        icotent = string.Format("{0} {1} fun(", icotent, na.Value);  
+                    }
+                    if(index > 3 && index < names.Count)
+                    {
+                        icotent =icotent + string.Format("{0}:some,",na.Value);
+                    }
+                    if(index > 3 && index == names.Count)
+                    {
+                        icotent =icotent + string.Format("{0}:some",na.Value);
+                    }
                 }
+
+                strBuid.AppendLine(icotent + ")");
             }
 
             return strBuid.ToString();
