@@ -80,7 +80,7 @@ namespace EmmyLuaComments
             {
                 var fc = functionDeclarationRx.Matches(item.Value);
                 if (fc.Count == 0)
-                    return;
+                    continue;
 
                 var names = nameRex.Matches(fc[0].Value);
 
